@@ -115,7 +115,7 @@ class SQLObject
   end
 
   def save
-    # ...
+    self.id.nil? ? self.insert : self.update
   end
   
   self.finalize!
