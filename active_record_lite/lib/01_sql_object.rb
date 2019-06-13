@@ -22,7 +22,7 @@ class SQLObject
   end
 
   def self.finalize!
-    SQLObject.columns.each do |column|
+    self.columns.each do |column|
       define_method("#{column}=") do |ref|
         self.attributes[column] = ref
       end
@@ -85,16 +85,16 @@ class SQLObject
   end
 
   def attribute_values
-    SQLObject.columns.map { |col| self.send(col) }
+    self.class.columns.map { |col| self.send(col) }
   end
 
   def insert
-    col_names = SQLObject.columns.join(',')
-    q_marks = (['?'] * SQLObject.columns.length).join(',')
+    col_names = self.class.columns.join(',')
+    q_marks = (['?'] * self.class.columns.length).join(',')
     vals = self.attribute_values
     data = DBConnection.execute(<<-SQL, *vals)
       INSERT INTO
-        #{SQLObject.table_name} (#{col_names})
+        #{self.class.table_name} (#{col_names})
       VALUES
         (#{q_marks})
     SQL
@@ -102,12 +102,21 @@ class SQLObject
   end
 
   def update
-    # ...
+    col_names = self.class.columns.map { |col| "#{col} = ?" }.join(', ')
+    vals = self.attribute_values
+    DBConnection.execute(<<-SQL, *vals, self.id)
+      update
+        #{self.class.table_name} 
+      set 
+        #{col_names}
+      where
+        id = ?
+    SQL
   end
 
   def save
     # ...
   end
+  
   self.finalize!
-
 end
