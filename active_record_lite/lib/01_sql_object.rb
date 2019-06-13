@@ -7,7 +7,7 @@ class SQLObject
   def self.columns
     if @columns.nil?
       data = DBConnection.execute2(<<-SQL)
-        select * from #{table_name} limit 1
+        select * from #{table_name}
       SQL
 
       @columns = []
