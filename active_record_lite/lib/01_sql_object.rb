@@ -5,18 +5,31 @@ require 'active_support/inflector'
 
 class SQLObject
   def self.columns
-    # ...
+    if @columns.nil?
+      data = DBConnection.execute2(<<-SQL)
+        select * from #{table_name} limit 1
+      SQL
+
+      @columns = []
+      data.first.each do |col|
+        @columns << col.to_sym
+      end
+      @columns
+    else
+      @columns
+    end
+  
   end
 
   def self.finalize!
   end
 
   def self.table_name=(table_name)
-    # ...
+    @table_name = table_name
   end
 
   def self.table_name
-    # ...
+    @table_name ||= 'cats'
   end
 
   def self.all
